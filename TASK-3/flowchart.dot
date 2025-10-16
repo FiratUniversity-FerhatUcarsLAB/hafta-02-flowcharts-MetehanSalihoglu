@@ -1,0 +1,63 @@
+digraph HastaneSistemi {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fillcolor="#EFEFEF", fontname="Helvetica"];
+    edge [fontname="Helvetica"];
+
+    start [label="Başla", shape=ellipse, style=filled, fillcolor="#C8E6C9"];
+    end_node [label="Bitir", shape=ellipse, style=filled, fillcolor="#FFCDD2"];
+
+    subgraph cluster_MainMenu {
+        label = "Ana Menü";
+        bgcolor="#E3F2FD";
+        
+        main_menu [label="Ana Menü\n1: Randevu Sistemi\n2: Tahlil Sistemi\n3: Çıkış"];
+        secim [label="Seçim Yap", shape=diamond, style=filled, fillcolor="#FFF9C4"];
+        
+        main_menu -> secim;
+    }
+
+    subgraph cluster_AppointmentSystem {
+        label = "Modül 1: Hastane Randevu Sistemi";
+        bgcolor="#F3E5F5";
+
+        randevu_kimlik [label="1. Kimlik Doğrulama"];
+        randevu_poliklinik [label="2. Poliklinik Seçimi"];
+        randevu_doktor [label="3. Doktor Listesi"];
+        randevu_saat [label="4. Uygun Saatler"];
+        randevu_onay [label="5. Randevu Onayı"];
+        randevu_sms [label="6. SMS Gönderme"];
+
+        randevu_kimlik -> randevu_poliklinik [label="Başarılı"];
+        randevu_poliklinik -> randevu_doktor;
+        randevu_doktor -> randevu_saat;
+        randevu_saat -> randevu_onay;
+        randevu_onay -> randevu_sms [label="Evet"];
+        randevu_sms -> main_menu [label="İşlem Bitti"];
+        randevu_onay -> main_menu [label="Hayır/İptal"];
+    }
+
+    subgraph cluster_LabResultSystem {
+        label = "Modül 2: Tahlil Sonucu Görüntüleme Sistemi";
+        bgcolor="#E0F2F1";
+
+        tahlil_kimlik [label="1. Kimlik Doğrulama"];
+        tahlil_varlik_kontrol [label="2. Tahlil Varlığı Kontrolü"];
+        tahlil_durum_kontrol [label="3. Sonuç Hazır Mı?"];
+        tahlil_goruntuleme [label="4. Görüntüleme / Bekleme Mesajı"];
+        tahlil_pdf [label="5. PDF İndirme"];
+
+        tahlil_kimlik -> tahlil_varlik_kontrol [label="Başarılı"];
+        tahlil_varlik_kontrol -> tahlil_durum_kontrol [label="Tahlil Var"];
+        tahlil_durum_kontrol -> tahlil_goruntuleme;
+        tahlil_goruntuleme -> tahlil_pdf [label="Sonuç Görüntülendi"];
+        tahlil_pdf -> main_menu [label="İşlem Bitti"];
+        tahlil_goruntuleme -> main_menu [label="Beklemede / Başka İşlem Yok"];
+        tahlil_varlik_kontrol -> main_menu [label="Tahlil Yok"];
+    }
+
+    // Ana Akış Bağlantıları
+    start -> main_menu;
+    secim -> randevu_kimlik [label="Seçim = 1"];
+    secim -> tahlil_kimlik [label="Seçim = 2"];
+    secim -> end_node [label="Seçim = 3"];
+}
