@@ -1,0 +1,46 @@
+digraph AkilliEvGuvenlikSistemi {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fillcolor="#EFEFEF", fontname="Helvetica"];
+    edge [fontname="Helvetica", fontsize=10];
+
+    // Node Definitions
+    start [label="Başla", shape=ellipse, style=filled, fillcolor="#C8E6C9"];
+    dongu_basi [label="Sensör Okuma Döngüsü"];
+    sistem_aktif_mi [label="Sistem Aktif Mi?", shape=diamond, style=filled, fillcolor="#FFF9C4"];
+    sensor_oku [label="Sensörleri Oku\n(Hareket, Kapı)"];
+    anomali_var_mi [label="Anormallik Var Mı?", shape=diamond, style=filled, fillcolor="#FFCDD2"];
+    kamera_aktif_et [label="Kamerayı Aktif Et"];
+    yanlis_alarm_kontrol [label="Ev Sahibi Evde Mi?", shape=diamond, style=filled, fillcolor="#FFCDD2"];
+    alarm_seviyesi_belirle [label="Alarm Seviyesi Belirle\n(Düşük, Orta, Yüksek)"];
+    bildirim_gonder [label="Bildirim Gönder\n(App, SMS, Email)"];
+    kullanici_tepkisi_bekle [label="Kullanıcı Tepkisi Bekle\n(60sn)", shape=diamond, style=filled, fillcolor="#FFF9C4"];
+    alarm_sifirla [label="Alarmı Sıfırla"];
+    alarm_devam_et [label="Alarmı Devam Ettir / Yükselt"];
+    dusuk_oncelikli_bildirim [label="Düşük Öncelikli Bildirim Gönder"];
+    
+    // Flow Logic
+    start -> dongu_basi;
+    dongu_basi -> sistem_aktif_mi;
+    
+    sistem_aktif_mi -> sensor_oku [label="Evet"];
+    sistem_aktif_mi -> dongu_basi [label="Hayır (Bekle)"];
+    
+    sensor_oku -> anomali_var_mi;
+    anomali_var_mi -> dongu_basi [label="Hayır"];
+    anomali_var_mi -> kamera_aktif_et [label="Evet"];
+    
+    kamera_aktif_et -> yanlis_alarm_kontrol;
+    
+    yanlis_alarm_kontrol -> alarm_seviyesi_belirle [label="Hayır (Evde Değil)"];
+    yanlis_alarm_kontrol -> dusuk_oncelikli_bildirim [label="Evet (Evde)"];
+    dusuk_oncelikli_bildirim -> dongu_basi;
+    
+    alarm_seviyesi_belirle -> bildirim_gonder;
+    bildirim_gonder -> kullanici_tepkisi_bekle;
+    
+    kullanici_tepkisi_bekle -> alarm_sifirla [label="Komut: 'Sıfırla'"];
+    kullanici_tepkisi_bekle -> alarm_devam_et [label="Komut: 'Devam Et' veya Zaman Aşımı"];
+    
+    alarm_sifirla -> dongu_basi;
+    alarm_devam_et -> dongu_basi [label="İşlem Tamamlandı"];
+}
