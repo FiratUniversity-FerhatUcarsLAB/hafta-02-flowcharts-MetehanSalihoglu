@@ -1,0 +1,68 @@
+digraph ATM {
+  rankdir=TB;
+  node [fontname="Arial", fontsize=10];
+
+  // Düğüm tanımları
+  start [shape=oval, label="BAŞLA"];
+  setVars [shape=box, label="Değişkenleri Ayarla\nGÜNLÜK_LIMIT=5000\nKULLANILAN_LIMIT=0\nPIN=1234\nHAK=3\nBAKIYE=10000"];
+
+  // PIN doğrulama
+  pinInput [shape=parallelogram, label="PIN Gir"];
+  checkPin [shape=diamond, label="PIN Doğru mu?"];
+  pinWrong [shape=parallelogram, label="Hatalı PIN\nHAK-1 ve mesaj"];
+  checkPinRights [shape=diamond, label="HAK = 0 mı?"];
+  blocked [shape=parallelogram, label="Kart bloke oldu\nBanka ile iletişime geçin"];
+  endBlocked [shape=oval, label="BİTİR"];
+  pinSuccess [shape=parallelogram, label="PIN doğru\nHoşgeldiniz"];
+
+  // Ana işlem döngüsü
+  displayBalance [shape=parallelogram, label="Bakiye ve Günlük Limit Göster"];
+  amountInput [shape=parallelogram, label="Çekilecek Tutarı Gir (20 TL katı)"];
+  checkAmount [shape=diamond, label="Tutar 20 TL'nin katı mı?"];
+  invalidAmount [shape=parallelogram, label="Hatalı Tutar\n20 TL katı olmalı"];
+
+  checkBalance [shape=diamond, label="Tutar > Bakiye mi?"];
+  insufficientBalance [shape=parallelogram, label="Yetersiz Bakiye"];
+
+  checkLimit [shape=diamond, label="KULLANILAN_LIMIT+TUTAR > GÜNLÜK_LIMIT mi?"];
+  limitExceeded [shape=parallelogram, label="Günlük Limit Aşıldı"];
+
+  withdraw [shape=box, label="BAKIYE -= TUTAR\nKULLANILAN_LIMIT += TUTAR"];
+  success [shape=parallelogram, label="İşlem Başarılı\nYeni Bakiye Göster"];
+
+  another [shape=parallelogram, label="Başka işlem yapmak istiyor musunuz? (E/H)"];
+  checkAnother [shape=diamond, label="CEVAP = H mı?"];
+  goodbye [shape=parallelogram, label="Kartınızı almayı unutmayın\nİyi günler!"];
+  end [shape=oval, label="BİTİR"];
+
+  // Bağlantılar
+  start -> setVars -> pinInput;
+  pinInput -> checkPin;
+  checkPin -> pinSuccess [label="Evet"];
+  checkPin -> pinWrong [label="Hayır"];
+
+  pinWrong -> checkPinRights;
+  checkPinRights -> pinInput [label="Hayır"];
+  checkPinRights -> blocked [label="Evet"];
+  blocked -> endBlocked;
+
+  pinSuccess -> displayBalance;
+  displayBalance -> amountInput -> checkAmount;
+
+  checkAmount -> checkBalance [label="Evet"];
+  checkAmount -> invalidAmount [label="Hayır"];
+  invalidAmount -> displayBalance;
+
+  checkBalance -> insufficientBalance [label="Evet"];
+  checkBalance -> checkLimit [label="Hayır"];
+  insufficientBalance -> displayBalance;
+
+  checkLimit -> limitExceeded [label="Evet"];
+  checkLimit -> withdraw [label="Hayır"];
+  limitExceeded -> displayBalance;
+
+  withdraw -> success -> another -> checkAnother;
+  checkAnother -> displayBalance [label="Hayır"];
+  checkAnother -> goodbye [label="Evet"];
+  goodbye -> end;
+}
