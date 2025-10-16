@@ -1,0 +1,67 @@
+digraph DersKayitSistemi {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fillcolor="#EFEFEF", fontname="Helvetica"];
+    edge [fontname="Helvetica", fontsize=10];
+
+    // Node Definitions
+    start [label="Başla", shape=ellipse, style=filled, fillcolor="#C8E6C9"];
+    giris [label="Öğrenci Girişi"];
+    giris_kontrol [label="Giriş Başarılı Mı?", shape=diamond, style=filled, fillcolor="#FFF9C4"];
+    ders_dongusu [label="Ders Seçim Ekranı\n(Listele, Ekle, Çıkar, Onayla)"];
+    secim_yap [label="İşlem Seçimi", shape=diamond, style=filled, fillcolor="#FFF9C4"];
+    
+    // Kontrol Noktaları (Diamonds)
+    kontenjan_kontrol [label="Kontenjan Var Mı?", shape=diamond, style=filled, fillcolor="#FFCDD2"];
+    onkosul_kontrol [label="Ön Koşul Sağlandı Mı?", shape=diamond, style=filled, fillcolor="#FFCDD2"];
+    cakisma_kontrol [label="Zaman Çakışması Var Mı?", shape=diamond, style=filled, fillcolor="#FFCDD2"];
+    kredi_kontrol [label="Kredi Limiti Aşıldı Mı?", shape=diamond, style=filled, fillcolor="#FFCDD2"];
+    
+    ders_ekle [label="Dersi Listeye Ekle"];
+    ders_cikar [label="Dersi Listeden Çıkar"];
+    hata_mesaji [label="Hata Mesajı Göster"];
+    
+    kayit_ozeti [label="Kayıt Özeti Göster"];
+    onay_sor [label="Kaydı Onayla?", shape=diamond, style=filled, fillcolor="#FFF9C4"];
+    danisman_kontrol [label="GPA < 2.5 Mi?", shape=diamond, style=filled, fillcolor="#FFCDD2"];
+    danismana_gonder [label="Kayıt Danışman Onayına Gönderildi"];
+    kayit_tamamlandi [label="Kayıt Başarıyla Onaylandı"];
+    bitir [label="Bitir", shape=ellipse, style=filled, fillcolor="#FFAB91"];
+
+    // Flow Logic
+    start -> giris;
+    giris -> giris_kontrol;
+    giris_kontrol -> ders_dongusu [label="Evet"];
+    giris_kontrol -> bitir [label="Hayır"];
+    
+    ders_dongusu -> secim_yap;
+    
+    secim_yap -> kontenjan_kontrol [label="1: Ders Ekle"];
+    secim_yap -> ders_cikar [label="2: Ders Çıkar"];
+    ders_cikar -> ders_dongusu;
+    
+    // Kontrol Akışı
+    kontenjan_kontrol -> onkosul_kontrol [label="Evet"];
+    onkosul_kontrol -> cakisma_kontrol [label="Evet"];
+    cakisma_kontrol -> kredi_kontrol [label="Hayır (Çakışma Yok)"];
+    kredi_kontrol -> ders_ekle [label="Hayır (Aşılmadı)"];
+    ders_ekle -> ders_dongusu;
+    
+    // Hata Yolları
+    kontenjan_kontrol -> hata_mesaji [label="Hayır"];
+    onkosul_kontrol -> hata_mesaji [label="Hayır"];
+    cakisma_kontrol -> hata_mesaji [label="Evet (Çakışma Var)"];
+    kredi_kontrol -> hata_mesaji [label="Evet (Aşıldı)"];
+    hata_mesaji -> ders_dongusu;
+    
+    // Kayıt Onaylama Akışı
+    secim_yap -> kayit_ozeti [label="3: Kaydı Tamamla"];
+    kayit_ozeti -> onay_sor;
+    onay_sor -> danisman_kontrol [label="Evet"];
+    onay_sor -> ders_dongusu [label="Hayır"];
+    
+    danisman_kontrol -> danismana_gonder [label="Evet"];
+    danisman_kontrol -> kayit_tamamlandi [label="Hayır"];
+    
+    danismana_gonder -> bitir;
+    kayit_tamamlandi -> bitir;
+}
