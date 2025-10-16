@@ -1,0 +1,135 @@
+digraph ECommerce {
+    rankdir=TB;
+    node [fontname="Arial"];
+
+    // Şekil stilleri
+    start_end [shape=oval, style=filled, fillcolor=lightgrey];
+    input_output [shape=parallelogram, style=filled, fillcolor=lightblue];
+    process [shape=box, style=filled, fillcolor=white];
+    decision [shape=diamond, style=filled, fillcolor=lightyellow];
+
+    // Düğümler
+    Start [label="BAŞLA", shape=oval, fillcolor=lightgreen];
+    
+    // 1. Kullanıcı Girişi
+    LoginCheck [label="Kullanıcı oturumu var mı?", shape=diamond];
+    GetLogin [label="Giriş bilgilerini al", shape=parallelogram];
+    CheckLogin [label="Bilgileri doğrula", shape=diamond];
+    LoginError [label="Hatalı giriş\nUyarı göster", shape=box];
+    GoHome [label="Anasayfaya yönlendir", shape=box];
+
+    // 2. Ürün Seçimi
+    Browse [label="Ürünleri listele / ara", shape=box];
+    SelectProduct [label="Ürün seçildi mi?", shape=diamond];
+    StockCheck [label="Stokta var mı?", shape=diamond];
+    AddCart [label="Sepete ekle\nFiyatı güncelle", shape=box];
+    StockError [label="Stok yetersiz uyarısı", shape=box];
+
+    // 3. Sepet Yönetimi
+    CartLoop [label="Kullanıcı sepeti düzenliyor mu?", shape=diamond];
+    UpdateQty [label="Adet değiştirildi mi?", shape=diamond];
+    CheckQtyStock [label="Yeni adet stokta var mı?", shape=diamond];
+    QtyUpdate [label="Adet güncelle\nFiyatı güncelle", shape=box];
+    RemoveItem [label="Ürün silindi mi?", shape=diamond];
+    RemoveProcess [label="Ürünü sil\nFiyatı güncelle", shape=box];
+
+    // 4. İndirim Kodu
+    DiscountCode [label="İndirim kodu girildi mi?", shape=diamond];
+    CheckDiscount [label="Kod geçerli ve koşullar uygun mu?", shape=diamond];
+    ApplyDiscount [label="İndirimi uygula\nToplamı güncelle", shape=box];
+    InvalidDiscount [label="Geçersiz kod uyarısı", shape=box];
+
+    // 5. Kargo
+    Address [label="Adres girildi / seçildi", shape=parallelogram];
+    CalcShipping [label="Kargo ücretini hesapla", shape=box];
+    ShowEstimate [label="Teslimat süresini göster", shape=box];
+
+    // 6. Ödeme
+    PaymentMethod [label="Ödeme yöntemi seçimi", shape=parallelogram];
+    IsCard [label="Kredi kartı mı?", shape=diamond];
+    CardInfo [label="Kart bilgilerini al", shape=parallelogram];
+    CardCheck [label="Ödeme başarılı mı?", shape=diamond];
+    PaymentSuccess [label="Sipariş oluştur\nStokları güncelle\nMail gönder", shape=box];
+    PaymentFail [label="Ödeme reddi\nTekrar dene", shape=box];
+
+    IsCOD [label="Kapıda ödeme mi?", shape=diamond];
+    CODProcess [label="Sipariş oluştur\nKapıda ödeme bilgisi gönder", shape=box];
+
+    IsHavale [label="Havale mi?", shape=diamond];
+    HavaleProcess [label="Sipariş oluştur\nStokları rezerve et\nHavale talimatı gönder", shape=box];
+
+    // 7. Sipariş Takibi
+    SaveOrder [label="Siparişi kaydet", shape=box];
+    CargoIntegration [label="Kargo kaydı oluştur", shape=box];
+    ShowOrderNum [label="Sipariş numarasını göster\nKargo takip linki", shape=box];
+
+    End [label="BİTİR", shape=oval, fillcolor=lightpink];
+
+    // Akışlar
+    Start -> LoginCheck;
+    LoginCheck -> GoHome [label="EVET"];
+    LoginCheck -> GetLogin [label="HAYIR"];
+    GetLogin -> CheckLogin;
+    CheckLogin -> GoHome [label="EVET"];
+    CheckLogin -> LoginError [label="HAYIR"];
+    LoginError -> GetLogin;
+
+    GoHome -> Browse;
+    Browse -> SelectProduct;
+    SelectProduct -> StockCheck [label="EVET"];
+    SelectProduct -> CartLoop [label="HAYIR"];
+
+    StockCheck -> AddCart [label="EVET"];
+    StockCheck -> StockError [label="HAYIR"];
+    AddCart -> SelectProduct;
+    StockError -> SelectProduct;
+
+    // Sepet Yönetimi
+    SelectProduct -> CartLoop;
+    CartLoop -> UpdateQty [label="EVET"];
+    CartLoop -> DiscountCode [label="HAYIR"];
+
+    UpdateQty -> CheckQtyStock [label="EVET"];
+    UpdateQty -> RemoveItem [label="HAYIR"];
+
+    CheckQtyStock -> QtyUpdate [label="EVET"];
+    CheckQtyStock -> StockError [label="HAYIR"];
+    QtyUpdate -> CartLoop;
+
+    RemoveItem -> RemoveProcess [label="EVET"];
+    RemoveItem -> CartLoop [label="HAYIR"];
+    RemoveProcess -> CartLoop;
+
+    // İndirim
+    DiscountCode -> CheckDiscount [label="EVET"];
+    DiscountCode -> Address [label="HAYIR"];
+    CheckDiscount -> ApplyDiscount [label="EVET"];
+    CheckDiscount -> InvalidDiscount [label="HAYIR"];
+    ApplyDiscount -> Address;
+    InvalidDiscount -> Address;
+
+    // Kargo
+    Address -> CalcShipping -> ShowEstimate -> PaymentMethod;
+
+    // Ödeme
+    PaymentMethod -> IsCard;
+    IsCard -> CardInfo [label="EVET"];
+    IsCard -> IsCOD [label="HAYIR"];
+    CardInfo -> CardCheck;
+    CardCheck -> PaymentSuccess [label="EVET"];
+    CardCheck -> PaymentFail [label="HAYIR"];
+    PaymentFail -> PaymentMethod;
+
+    IsCOD -> CODProcess [label="EVET"];
+    IsCOD -> IsHavale [label="HAYIR"];
+
+    IsHavale -> HavaleProcess [label="EVET"];
+    IsHavale -> SaveOrder [label="HAYIR"];
+
+    PaymentSuccess -> SaveOrder;
+    CODProcess -> SaveOrder;
+    HavaleProcess -> SaveOrder;
+
+    // Sipariş Takibi
+    SaveOrder -> CargoIntegration -> ShowOrderNum -> End;
+}
